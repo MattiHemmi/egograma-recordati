@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Egograma · inKNOWation</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --blue:#0093C9; --ink:#1a1a1a; --muted:#5b6770; --line:#e4e8eb;
+    --bg:#f6f8f9; --card:#ffffff;
+    --pc:#1f3a5f; --pp:#2f9e7f; --a:#0093C9; --nl:#f2a900; --ns:#8e6fb3; --nr:#e1574c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.5}
+  .wrap{max-width:820px;margin:0 auto;padding:28px 20px 60px}
+  .logo{font-size:26px;font-weight:800;letter-spacing:-.5px}
+  .logo .k{color:var(--blue)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 24px;margin-top:18px;
+    box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  h1{font-size:26px;margin:.2em 0 .3em}
+  h2{font-size:19px;margin:0 0 .4em}
+  p{color:var(--muted)}
+  .lead{font-size:16px;color:#34404a}
+  .btn{display:inline-block;background:var(--blue);color:#fff;border:none;border-radius:10px;
+    padding:13px 24px;font-size:16px;font-weight:600;cursor:pointer;transition:.15s}
+  .btn:hover{filter:brightness(.94)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.ghost{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}
+  .field{margin:14px 0}
+  .field label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+  .field input{width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;font-size:15px}
+  .row2{display:flex;gap:14px;flex-wrap:wrap}
+  .row2 .field{flex:1;min-width:200px}
+  .hidden{display:none}
+  .progbar{position:sticky;top:0;background:var(--bg);padding:10px 0 6px;z-index:5}
+  .progtrack{height:8px;background:#e4e8eb;border-radius:6px;overflow:hidden}
+  .progfill{height:100%;width:0;background:var(--blue);transition:width .25s}
+  .progtxt{font-size:13px;color:var(--muted);margin-top:6px}
+  .q{padding:16px 0;border-bottom:1px solid var(--line)}
+  .q:last-child{border-bottom:none}
+  .qhead{display:flex;gap:10px;margin-bottom:10px}
+  .qnum{color:var(--blue);font-weight:700;min-width:26px}
+  .qtext{font-weight:500}
+  .opts{display:flex;gap:6px;flex-wrap:wrap}
+  .opt{flex:1;min-width:88px}
+  .opt input{position:absolute;opacity:0;pointer-events:none}
+  .opt label{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;
+    border:1px solid var(--line);border-radius:9px;padding:8px 4px;cursor:pointer;font-size:12px;color:var(--muted);transition:.12s}
+  .opt label .v{font-weight:700;font-size:15px;color:var(--ink)}
+  .opt input:checked + label{border-color:var(--blue);background:#e9f6fb;color:var(--blue)}
+  .opt input:checked + label .v{color:var(--blue)}
+  .q.unanswered{background:#fff7f6;border-radius:10px;padding-left:10px}
+  .chart{display:flex;align-items:flex-end;gap:14px;height:300px;padding:10px 4px 0;margin-top:8px}
+  .bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+  .bar .col{width:100%;border-radius:8px 8px 0 0;display:flex;align-items:flex-start;justify-content:center;
+    color:#fff;font-weight:700;font-size:14px;padding-top:6px;min-height:24px;transition:height .6s}
+  .bar .lbl{margin-top:8px;font-size:12px;font-weight:600;text-align:center;color:var(--ink)}
+  .bar .sub{font-size:11px;color:var(--muted)}
+  .dom{background:#e9f6fb;border:1px solid var(--blue);border-radius:12px;padding:16px 18px;margin:18px 0}
+  .interp{margin-top:10px}
+  .interp .state{border-left:4px solid var(--blue);padding:4px 0 4px 14px;margin:14px 0}
+  .interp .state h3{margin:0 0 4px;font-size:16px}
+  .interp .state p{margin:0;font-size:14px;color:#34404a}
+  .small{font-size:12px;color:var(--muted)}
+  .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+  .err{color:#e1574c;font-size:14px;margin-top:10px;font-weight:600}
+  .logos{display:flex;gap:24px;align-items:center;justify-content:space-between;margin-bottom:28px;padding:0 40px}
+  .logo-img{height:60px;object-fit:contain}
+  .videos-section{margin-top:28px;padding:20px;background:#f0f7fb;border-radius:12px;border:1px solid var(--line)}
+  .videos-header{display:flex;gap:12px;align-items:center;cursor:pointer;margin-bottom:16px}
+  .videos-toggle{font-size:16px;transition:transform .2s}
+  .videos-toggle.open{transform:rotate(90deg)}
+  .videos-grid{display:grid;grid-template-columns:1fr;gap:16px}
+  .video-item{background:#fff;border-radius:10px;padding:16px;border:1px solid var(--line)}
+  .video-item h4{margin:0 0 8px;font-size:14px;font-weight:600;color:var(--ink)}
+  .video-item video{width:100%;border-radius:8px;border:none}
+  .share-box{background:#e9f6fb;border:1px solid var(--blue);border-radius:12px;padding:16px 18px;margin:18px 0}
+  .share-box h3{margin:0 0 8px;color:var(--ink)}
+  .share-url{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px;font-family:monospace;font-size:12px;word-break:break-all;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .share-url button{padding:6px 12px;font-size:12px}
+  .guide-section{margin-top:28px;padding:20px;background:#f9f5eb;border-radius:12px;border:1px solid #f2dcc5}
+  @media print{.actions,.progbar,.videos-section,.share-box,.guide-section{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ================= INTRO ================= -->
+  <section id="intro">
+    <div class="logos" style="justify-content:flex-end">
+      <div class="logo">in<span class="k">know</span>ation</div>
+    </div>
+    <div class="card">
+      <h1>Cuestionario Egograma</h1>
+      <p class="lead">Descubre cómo se reparte tu energía entre los seis estados de tu personalidad
+      —Padre Crítico, Padre Protector, Adulto, Niño Libre, Niño Sumiso y Niño Rebelde— y qué dice eso
+      sobre tu forma de liderar, decidir y relacionarte.</p>
+      <p>Son <strong>57 afirmaciones</strong>. Para cada una, elige con qué frecuencia te ocurre.
+      No hay respuestas buenas ni malas: responde con sinceridad y a la primera. Te llevará unos 8–10 minutos.</p>
+
+      <div class="row2">
+        <div class="field"><label>Nombre*</label><input id="f_nombre" type="text" placeholder="Tu nombre"></div>
+        <div class="field"><label>Apellidos</label><input id="f_apellidos" type="text" placeholder="Tus apellidos"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Email*</label><input id="f_email" type="email" placeholder="tucorreo@empresa.com"></div>
+        <div class="field"><label>Empresa</label><input id="f_empresa" type="text" placeholder="(opcional)"></div>
+      </div>
+      <p class="small">Usaremos tu email solo para enviarte tu informe de resultados. *Campos obligatorios.</p>
+      <div id="introErr" class="err hidden"></div>
+      <p><button class="btn" onclick="startTest()">Empezar el cuestionario →</button></p>
+    </div>
+  </section>
+
+  <!-- ================= TEST ================= -->
+  <section id="test" class="hidden">
+    <div class="progbar">
+      <div class="progtrack"><div id="progfill" class="progfill"></div></div>
+      <div id="progtxt" class="progtxt">0 de 57 respondidas</div>
+    </div>
+    <div class="card">
+      <div id="questions"></div>
+    </div>
+    <div id="testErr" class="err hidden">Faltan respuestas. Te hemos marcado las preguntas sin contestar.</div>
+    <div class="actions">
+      <button class="btn" onclick="finishTest()">Ver mis resultados →</button>
+    </div>
+  </section>
+
+  <!-- ================= RESULTS ================= -->
+  <section id="results" class="hidden">
+    <div class="logos" style="justify-content:flex-end">
+      <div class="logo">in<span class="k">know</span>ation</div>
+    </div>
+    <div class="card" id="resultCard">
+      <h1>Tu Egograma</h1>
+      <p id="resName" class="lead"></p>
+      <div class="chart" id="chart"></div>
+      <p class="small" style="text-align:center">Porcentaje de "facilidad para ubicarte" en cada estado · (puntuación bruta entre paréntesis)</p>
+
+      <div class="dom" id="domBox"></div>
+
+      <div class="interp" id="interp"></div>
+
+      <!-- SHARE BOX -->
+      <div class="share-box" id="shareBox" style="display:none">
+        <h3>Comparte tu resultado</h3>
+        <p style="margin:0 0 12px;color:var(--muted);font-size:14px">Copia este enlace para que otros vean tu egograma y los vídeos:</p>
+        <div class="share-url">
+          <span id="shareUrl"></span>
+          <button class="btn" style="padding:6px 12px;font-size:12px" onclick="copyShareUrl()">Copiar</button>
+        </div>
+      </div>
+
+      <!-- VIDEOS SECTION -->
+      <div class="videos-section" id="videosSection">
+        <div class="videos-header" onclick="toggleVideos()">
+          <span class="videos-toggle" id="videosToggle">▶</span>
+          <h2 style="margin:0;font-size:18px">Programa: descubre tu personalidad</h2>
+        </div>
+        <div id="videosList" style="display:none">
+          <div class="videos-grid" id="videosGrid"></div>
+          <div style="display:flex;gap:12px;margin-top:12px">
+            <button class="btn" onclick="toggleGuide()">📖 Ver guía de interpretación →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GUIDE SECTION -->
+      <div class="guide-section" id="guideSection" style="display:none">
+        <h2>Guía de interpretación</h2>
+        <p style="margin:0 0 12px;color:var(--muted)">Descarga la guía completa para profundizar en tu interpretación:</p>
+        <a href="https://f64b07ab-78bb-430e-a878-e7c676e6e7cb.usrfiles.com/ugd/f64b07_7e8c48b54ad34e1180be016835ba9e92.pdf" class="btn" style="display:inline-block;padding:10px 16px;text-decoration:none;font-size:14px" download>⬇ Descargar guía PDF</a>
+        <div style="display:flex;gap:12px;margin-top:12px">
+          <button class="btn ghost" onclick="toggleGuide()">← Volver a los resultados</button>
+        </div>
+      </div>
+
+      <p class="small">El Egograma es una herramienta de autoconocimiento basada en el Análisis Transaccional.
+      Es una foto del momento, no una etiqueta fija: tu Adulto es quien puede reequilibrar el resto de estados.
+      © inKNOWation · Adaptado de un test de J. M. Opi.</p>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="downloadPDF()">⬇ Descargar mi informe en PDF</button>
+      <button class="btn ghost" onclick="restart()">Volver a empezar</button>
+    </div>
+  </section>
+
+  <!-- ================= SHARED VIEW (cuando viene con ?id) ================= -->
+  <section id="sharedView" class="hidden">
+    <div class="logos" style="justify-content:flex-end">
+      <div class="logo">in<span class="k">know</span>ation</div>
+    </div>
+    <div class="card" id="sharedCard">
+      <h1>Egograma</h1>
+      <p id="sharedName" class="lead"></p>
+      <div class="chart" id="sharedChart"></div>
+      <p class="small" style="text-align:center">Porcentaje de "facilidad para ubicarte" en cada estado · (puntuación bruta entre paréntesis)</p>
+
+      <div class="dom" id="sharedDomBox"></div>
+
+      <div class="interp" id="sharedInterp"></div>
+
+      <!-- VIDEOS SECTION (SHARED) -->
+      <div class="videos-section" id="sharedVideosSection">
+        <div class="videos-header" onclick="toggleSharedVideos()">
+          <span class="videos-toggle" id="sharedVideosToggle">▶</span>
+          <h2 style="margin:0;font-size:18px">Programa: descubre tu personalidad</h2>
+        </div>
+        <div id="sharedVideosList" style="display:none">
+          <div class="videos-grid" id="sharedVideosGrid"></div>
+          <div style="display:flex;gap:12px;margin-top:12px">
+            <button class="btn" onclick="toggleSharedGuide()">📖 Ver guía de interpretación →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GUIDE SECTION (SHARED) -->
+      <div class="guide-section" id="sharedGuideSection" style="display:none">
+        <h2>Guía de interpretación</h2>
+        <p style="margin:0 0 12px;color:var(--muted)">Descarga la guía completa para profundizar:</p>
+        <a href="https://f64b07ab-78bb-430e-a878-e7c676e6e7cb.usrfiles.com/ugd/f64b07_7e8c48b54ad34e1180be016835ba9e92.pdf" class="btn" style="display:inline-block;padding:10px 16px;text-decoration:none;font-size:14px" download>⬇ Descargar guía PDF</a>
+        <div style="display:flex;gap:12px;margin-top:12px">
+          <button class="btn ghost" onclick="toggleSharedGuide()">← Volver a los vídeos</button>
+        </div>
+      </div>
+
+      <p class="small">El Egograma es una herramienta de autoconocimiento basada en el Análisis Transaccional.
+      Es una foto del momento, no una etiqueta fija: su Adulto es quien puede reequilibrar el resto de estados.
+      © inKNOWation · Adaptado de un test de J. M. Opi.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const CONFIG = {
+  webhookUrl: "https://script.google.com/macros/s/AKfycbwnwt4rRjo8K1B3wQnNOTmm4veL6N_nLqrqhcCfXFPMw-WoEGpUjgx0DrDtV_2xSOyI9w/exec",
+  enviarResultados: true
+};
+
+const FREQ = ["No, nunca","Rara vez","A veces","Con frecuencia","Sí, siempre"];
+
+const QUESTIONS = [
+ "Me preocupo de elevar la moral de la gente (colegas, jefes, etc.).",
+ "Sé relajarme muy bien.",
+ "¡El que me busca me encuentra! (si me provocan me altero y respondo con rabia).",
+ "Con las personas sumisas me vuelvo malo/a.",
+ "Compruebo los hechos. No me fío de las impresiones.",
+ "Veo fácilmente el detalle que no encaja, critico fácilmente.",
+ "Me gusta bromear, hacer tonterías, bobadas, etc.",
+ "Soy educado/a y cortés, eso es importante.",
+ "En la vida, me baso en ciertos principios, en ciertos valores que me ayuden a elegir mi deber.",
+ "Tengo miedo a ser duro/a; es mejor no presionar, no ofender.",
+ "Me ofrezco voluntariamente, me gusta ayudar.",
+ "Las personas fuertes y seguras de sí mismas me impresionan y me producen mucho respeto y hasta algo de temor.",
+ "Ideo fácilmente soluciones originales.",
+ "Soy algo egoísta, despreocupado/a. Voy a lo mío.",
+ "Me disgusta mucho que me impongan algo.",
+ "Me gusta vivir la vida, divertirme; se me considera bullicioso/a.",
+ "Me parece justo que me critiquen; yo también me critico.",
+ "Soy de un humor estable, no me irrito aunque la situación me impulse a ello.",
+ "Funciono con la intuición, con el sexto sentido; utilizo mi olfato para actuar. Presiento lo que hay que hacer.",
+ "Soy muy indulgente con los errores.",
+ "Cuando me critican, escucho tranquilamente y estoy dispuesto/a a revisar mis ideas.",
+ "Me gusta complacerme. Persevero en la satisfacción de mis necesidades y deseos.",
+ "Manifiesto con facilidad mis sentimientos, incluso el miedo, la decepción o la ira.",
+ "Tengo curiosidad, el misterio me atrae.",
+ "Si siento que se me manipula o que se me fuerza, me pongo furioso/a.",
+ "Tengo realmente un sentido de la responsabilidad mayor que la media de la gente.",
+ "Me gusta ayudar como sea a la gente que está en dificultades.",
+ "Me gusta agradar y conseguir ser bien mirado/a.",
+ "Suelo trampear. Tengo mis pequeñas venganzas.",
+ "Sé reunir bien la información útil.",
+ "Doy muestras de sangre fría.",
+ "Soy vivo/a, impulsivo/a, me "embalo", reacciono bruscamente.",
+ "Soporto mal a las personas débiles o indecisas.",
+ "Temo ser inoportuno/a, molestar, perturbar. Prefiero no insistir demasiado.",
+ "Soy efusivo/a, espontáneo/a, sonriente.",
+ "Las personas arrogantes son insoportables, las detesto a todas.",
+ "Me gusta explicar, informar, hacer comprender, aportar algo.",
+ "Presiento por adelantado ciertas situaciones. Podría hacer apuestas.",
+ "Soy espabilado/a e imaginativo/a para encontrar soluciones.",
+ "Soy trabajador/a, disciplinado/a, serio/a, discreto/a.",
+ "Planifico mis actividades. Hago una lista diaria de mis acciones y les doy prioridades.",
+ "Me siento interiormente culpable de no hacer lo bastante o de hacerlo mal.",
+ "Tengo humor y veo el aspecto divertido de las situaciones.",
+ "Tengo tendencia a encargarme de todas las cosas.",
+ "Tengo poco aprecio a las jerarquías. De hecho, no me gustan mucho los jefes.",
+ "Tengo una buena capacidad para organizarme y prever mi tiempo, lo cual me permite estar más relajado/a.",
+ "He sido educado/a severamente, con unos padres exigentes.",
+ "Ante una decisión, entre varios pareceres, tengo tendencia a titubear, a dudar.",
+ "Soy muy comprensivo/a, y me gusta responsabilizarme o hacer más cosas de las normales para ayudar a los demás.",
+ "Soy duro/a conmigo mismo/a, duro/a con los demás, tengo sentido del esfuerzo.",
+ "La gente me encuentra tolerante, pero también firme y realista.",
+ "Ante un desacuerdo, arreglo las cosas, soy conciliador/a.",
+ "Estoy convencido/a de que hay que ser serio/a y hacer lo que hay que hacer. Así se lo digo a los demás.",
+ "Sé obtener con astucia lo que quiero.",
+ "Me gusta la actividad física, el trabajo manual, el deporte; aquello que me apetece en cada momento.",
+ "Si soy criticado/a o tratado/a mal, lo acuso, me siento deprimido/a.",
+ "Las recetas, los consejos, están bien pero, ante todo, pienso y decido por mí mismo/a."
+];
+
+const KEY = {
+  Pc:[6,9,26,33,44,47,50,53],
+  Pp:[1,10,11,20,27,37,49,52],
+  A :[5,18,21,30,31,41,46,51,57],
+  Nl:[2,7,14,16,22,23,35,55],
+  Ns:[8,12,17,28,34,40,42,48,56],
+  Nr:[3,4,15,25,29,32,36,45]
+};
+const STATES = ["Pc","Pp","A","Nl","Ns","Nr"];
+const STATE_NAME = {Pc:"Padre Crítico",Pp:"Padre Protector",A:"Adulto",Nl:"Niño Libre",Ns:"Niño Sumiso",Nr:"Niño Rebelde"};
+const STATE_COLOR = {Pc:"#1f3a5f",Pp:"#2f9e7f",A:"#0093C9",Nl:"#f2a900",Ns:"#8e6fb3",Nr:"#e1574c"};
+
+const NORMS = {
+  Pc:{10:16,25:18,50:21,75:23,90:26},
+  Pp:{10:15,25:17,50:20,75:23,90:26},
+  A :{10:19,25:22,50:25,75:28,90:31},
+  Nl:{10:15,25:17,50:19,75:23,90:28},
+  Ns:{10:14,25:17,50:20,75:23,90:26},
+  Nr:{10:12,25:15,50:17,75:19,90:22}
+};
+
+const INTERP = {
+  Pc:{ que:"Padre Crítico (también llamado Padre Normativo). Su función es doble: establecer límites y hacer juicios, tomando como estándar lo almacenado en tu Estado del Yo Padre.",
+    funcional:"En su versión funcional, los juicios son constructivos («a este plato le falta sal», «este proyecto no está completo») y los límites cuidan («no te acerques, que está pintado»).",
+    disfuncional:"En su versión disfuncional, los juicios destruyen («qué porquería de comida», «¿cómo se te ocurre esta chapuza?») y los límites humillan.",
+    alto:"Con el Padre Crítico alto te resulta fácil poner límites y mirar primero los resultados; el riesgo es la dureza, la crítica y, junto al driver «Sé Perfecto», entrar como Perseguidor en los conflictos.",
+    bajo:"Con el Padre Crítico bajo te cuesta más sostener un estándar, marcar límites o confrontar cuando hace falta." },
+  Pp:{ que:"Padre Protector (o Nutritivo/Nutricio). Su función es ocuparse del bienestar propio y ajeno.",
+    funcional:"En su versión funcional, preguntas («¿tienes calor?», «¿estás cansado/a?») y, según la respuesta, ayudas o no. Es cuidado de igual a igual.",
+    disfuncional:"En su versión disfuncional quieres «salvar» al otro y lo conviertes en víctima: «tonterías, ponte aquí al aire»; el clásico «¿seguro que no tienes más hambre?» aunque te digan que no.",
+    alto:"Con el Padre Protector alto miras primero el impacto sobre las personas y luego sobre los resultados; te resulta fácil la empatía y más difícil poner límites por miedo al «mal rollo». En conflicto, riesgo de actuar como Salvador.",
+    bajo:"Con el Padre Protector bajo puede costarte mostrarte atento o cercano, o tener en cuenta las necesidades de los demás." },
+  A :{ que:"Adulto. Es la única parte que NO se divide y NO tiene versión disfuncional. Su función es buscar y dar información, y ajustar tu percepción (imago) al presente.",
+    funcional:"Una forma fácil de estar en Adulto es preguntar para obtener información objetiva («¿a qué hora llega el avión?»). Bien dimensionado (en torno al 50%) te permite detectar alternativas bajo estrés y actuar desde la Autonomía. Ojo: el mismo mensaje con otra entonación puede leerse como Padre.",
+    disfuncional:"",
+    alto:"Con el Adulto muy alto y, a la vez, el Padre Crítico alto, vigila la «contaminación»: dar datos mezclados con prejuicios y sentirte en posesión de la verdad sin notar que estás metiendo tu juicio.",
+    bajo:"Con el Adulto bajo, el riesgo es no atender la información del momento y basarte solo en el pasado aprendido (Padre) o experimentado (Niño), activando respuestas automáticas bajo estrés." },
+  Nl:{ que:"Niño Libre (o Niño Natural). Su función es expresar emociones, espontaneidad, humor, creatividad y disfrute, libre de normas parentales.",
+    funcional:"En su versión funcional cuentas chistes, muestras curiosidad, preparas sorpresas y lanzas ideas nuevas aunque sean locas. Con el Adulto, gran tándem para innovar.",
+    disfuncional:"En su versión disfuncional («gamberra») los chistes son de mal gusto, la curiosidad fastidia y las sorpresas son desagradables.",
+    alto:"Con el Niño Libre alto tienes energía, ideas y conexión. Si además el Adulto es bajo, ojo con el «síndrome de Peter Pan»: mucha creatividad que no aterriza.",
+    bajo:"Con el Niño Libre bajo resta espontaneidad y disfrute, y cuesta más tener en cuenta tus propias necesidades; si encima el Niño Sumiso y el Padre Protector están altos, aumenta el riesgo de sacrificarte por los demás." },
+  Ns:{ que:"Niño Adaptado Sumiso. Su función es adaptarse y responder de forma sumisa o complaciente a los mensajes que recibe.",
+    funcional:"En su versión funcional, ante un «eso no está bien» respondes «sí, tienes razón, lo cambio» o «sí, te escucho». Facilita cooperación y encaje sano.",
+    disfuncional:"En su versión disfuncional te sometes sin criterio: «vale, lo que tú digas», «ok, si no hay más remedio», quedando en posición de Víctima.",
+    alto:"Con el Niño Sumiso alto eres buen cumplidor de normas; el riesgo es la complacencia, el miedo a molestar y la dificultad para decir que no.",
+    bajo:"Con el Niño Sumiso bajo te adaptas menos a lo esperado, lo que puede aportar criterio o generar fricción según el contexto." },
+  Nr:{ que:"Niño Adaptado Rebelde. Su función es adaptarse y responder de forma rebelde a los mensajes que recibe.",
+    funcional:"En su versión funcional cuestionas para construir: «¿seguro que no podemos hacerlo así?», «¡es que no es justo!» con intención sana de aportar.",
+    disfuncional:"En su versión disfuncional te rebelas sin más: «¡no me da la gana!, ¡paso de hacerlo así!», «me da igual si me sancionan», quedando también en posición de Víctima.",
+    alto:"Con el Niño Rebelde alto tiendes a cuestionarlo todo; puede que ya hayas aprendido a conseguir lo que quieres desde el Niño Libre y el Adulto, pero bajo estrés tiendes a «engancharte» en la rebeldía.",
+    bajo:"Con el Niño Rebelde bajo puede faltarte empuje para retar lo establecido cuando conviene." }
+};
+
+function levelOf(p){ return p>=60 ? "alto" : (p<=35 ? "bajo" : "medio"); }
+
+let answers = {};
+let currentResultId = null;
+
+window.addEventListener("load", function(){
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  if(id){ loadSharedResult(id); }
+});
+
+function startTest(){
+  const nombre=val("f_nombre"), email=val("f_email");
+  const err=document.getElementById("introErr");
+  if(!nombre || !validEmail(email)){
+    err.textContent = !nombre ? "Por favor, escribe tu nombre." : "Por favor, escribe un email válido.";
+    err.classList.remove("hidden"); return;
+  }
+  err.classList.add("hidden");
+  document.getElementById("intro").classList.add("hidden");
+  document.getElementById("test").classList.remove("hidden");
+  renderQuestions();
+  window.scrollTo(0,0);
+}
+
+function renderQuestions(){
+  const c=document.getElementById("questions");
+  c.innerHTML = QUESTIONS.map((t,i)=>{
+    const n=i+1;
+    const opts = FREQ.map((f,v)=>`
+      <div class="opt">
+        <input type="radio" id="q${n}_${v}" name="q${n}" value="${v}" onchange="onAnswer(${n},${v})">
+        <label for="q${n}_${v}"><span class="v">${v}</span>${f}</label>
+      </div>`).join("");
+    return `<div class="q" id="qbox${n}">
+        <div class="qhead"><span class="qnum">${n}.</span><span class="qtext">${t}</span></div>
+        <div class="opts">${opts}</div>
+      </div>`;
+  }).join("");
+  updateProgress();
+}
+
+function onAnswer(n,v){
+  answers[n]=v;
+  document.getElementById("qbox"+n).classList.remove("unanswered");
+  updateProgress();
+}
+
+function updateProgress(){
+  const done=Object.keys(answers).length;
+  document.getElementById("progfill").style.width=(done/57*100)+"%";
+  document.getElementById("progtxt").textContent=done+" de 57 respondidas";
+}
+
+function finishTest(){
+  const missing=[];
+  for(let n=1;n<=57;n++){ if(answers[n]===undefined){ missing.push(n);
+    document.getElementById("qbox"+n).classList.add("unanswered"); } }
+  if(missing.length){
+    document.getElementById("testErr").classList.remove("hidden");
+    document.getElementById("qbox"+missing[0]).scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+  document.getElementById("testErr").classList.add("hidden");
+  computeAndShow();
+}
+
+function computeAndShow(){
+  const scores={}, pct={};
+  STATES.forEach(s=>{
+    let sum=0; KEY[s].forEach(n=>sum+=(answers[n]||0));
+    scores[s]=sum; pct[s]=toPercent(s,sum);
+  });
+  window.__ego={scores,pct,nombre:val("f_nombre"),apellidos:val("f_apellidos")};
+  renderChart(scores,pct);
+  renderInterpretation(scores,pct);
+  renderVideos();
+  document.getElementById("resName").textContent = "Resultados de "+val("f_nombre")+" "+val("f_apellidos");
+  document.getElementById("test").classList.add("hidden");
+  document.getElementById("results").classList.remove("hidden");
+  window.scrollTo(0,0);
+  sendToBackend(scores,pct);
+}
+
+function sendToBackend(scores,pct){
+  if(!CONFIG.webhookUrl) return;
+  const maxp=Math.max(...STATES.map(s=>pct[s]));
+  const dominante=STATES.filter(s=>pct[s]===maxp).map(s=>STATE_NAME[s]).join(" y ");
+  const payload={
+    nombre:val("f_nombre"), apellidos:val("f_apellidos"),
+    email:val("f_email"), empresa:val("f_empresa"),
+    fecha:new Date().toISOString(),
+    dominante,
+    puntuaciones:scores,
+    porcentajes:pct
+  };
+  if(!CONFIG.enviarResultados){ delete payload.puntuaciones; delete payload.porcentajes; delete payload.dominante; }
+  try{
+    fetch(CONFIG.webhookUrl,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload),keepalive:true})
+      .then(r=>r.json())
+      .then(data=>{
+        if(data.id){
+          currentResultId = data.id;
+          const shareUrl = window.location.origin + window.location.pathname + "?id=" + data.id;
+          document.getElementById("shareUrl").textContent = shareUrl;
+          document.getElementById("shareBox").style.display = "block";
+        }
+      })
+      .catch(()=>{});
+  }catch(e){/* silencioso */}
+}
+
+function toPercent(s,score){
+  const n=NORMS[s];
+  const max=KEY[s].length*4;
+  const pts=[[0,0],[n[10],10],[n[25],25],[n[50],50],[n[75],75],[n[90],90],[max,100]];
+  if(score<=0) return 0;
+  if(score>=max) return 100;
+  for(let i=0;i<pts.length-1;i++){
+    const [x0,y0]=pts[i],[x1,y1]=pts[i+1];
+    if(score>=x0 && score<=x1){
+      if(x1===x0) return y1;
+      return Math.round(y0+(score-x0)*(y1-y0)/(x1-x0));
+    }
+  }
+  return 0;
+}
+
+function renderChart(scores,pct){
+  const c=document.getElementById("chart");
+  c.innerHTML=STATES.map(s=>`
+    <div class="bar">
+      <div class="col" style="height:${Math.max(pct[s],4)}%;background:${STATE_COLOR[s]}">${pct[s]}%</div>
+      <div class="lbl">${s}</div>
+      <div class="sub">${STATE_NAME[s]}</div>
+      <div class="sub">(${scores[s]})</div>
+    </div>`).join("");
+}
+
+function renderInterpretation(scores,pct){
+  const maxp=Math.max(...STATES.map(s=>pct[s]));
+  const dom=STATES.filter(s=>pct[s]===maxp);
+  const domNames=dom.map(s=>STATE_NAME[s]).join(" y ");
+  document.getElementById("domBox").innerHTML =
+    `<h2>Tu estado dominante: ${domNames}</h2>
+     <p style="color:#34404a;margin:0">Es el estado en el que te resulta más fácil "ubicarte" (${maxp}%).
+     Marca tu estilo más habitual de pensar, sentir y actuar — especialmente bajo estrés.
+     Recuerda: <strong>tú no eres como dice tu egograma</strong>. Es una foto de tu tendencia, no tu forma de ser.</p>`;
+
+  const lvl={}; STATES.forEach(s=>lvl[s]=levelOf(pct[s]));
+  const padreAvg=(pct.Pc+pct.Pp)/2;
+  const blocks=[];
+
+  let padre;
+  const dP=pct.Pp-pct.Pc;
+  if(Math.abs(dP)<=8){
+    padre="Tienes los dos comportamientos Padre bastante parejos: te cuesta poco actuar desde uno u otro y eliges según el contexto. Es un perfil interesante donde el manejo de datos y de emociones pesa por igual (innovación, gestión del cambio).";
+  } else if(dP>0){
+    padre="Tu <strong>Padre Protector pesa más que tu Padre Crítico</strong>: tiendes a mirar primero el impacto sobre las personas y luego sobre los resultados. Te resulta fácil la empatía y más difícil poner límites o confrontar (por miedo a enturbiar la relación). En conflicto, vigila la tendencia a «salvar» a los demás.";
+  } else {
+    padre="Tu <strong>Padre Crítico pesa más que tu Padre Protector</strong>: tiendes a mirar primero los resultados y luego las personas. Te resulta fácil poner límites y criterio, y más difícil ocuparte de las necesidades ajenas o mostrarte vulnerable. En conflicto, vigila la tendencia a «perseguir».";
+  }
+  blocks.push(["Tus comportamientos Padre",padre]);
+
+  let adulto;
+  if(lvl.A==="bajo" || pct.A < padreAvg-12){
+    adulto="Tu <strong>Adulto está poco dimensionado</strong> respecto a tu Padre. El riesgo es no atender la información del momento presente y basarte en el pasado aprendido (Padre) o experimentado (Niño), sobre todo bajo estrés.";
+    if(lvl.Nl==="alto") adulto+=" Como además tu Niño Libre es alto, aparece la posibilidad del «síndrome de Peter Pan»: mucha creatividad que puede no llegar a aterrizar.";
+    if(lvl.Pp==="alto") adulto+=" Y con el Padre Protector alto, mayor riesgo de comportarte como Salvador e incluso de sacrificarte por los demás.";
+  } else if(lvl.A==="alto" && lvl.Pc==="alto"){
+    adulto="Tu <strong>Adulto es alto y, a la vez, tu Padre Crítico también</strong>. Vigila la «contaminación» del Adulto con el Padre: dar datos mezclados con prejuicios y sentirte en posesión de la verdad. La forma de descontaminarlo es hacer(te) preguntas genuinas.";
+  } else {
+    adulto="Tu <strong>Adulto está razonablemente dimensionado</strong> (en proporción similar a tu Padre). Tiendes a tener en cuenta la realidad que te rodea e interactuar con el aquí y ahora de forma objetiva, lo que te facilita detectar alternativas bajo estrés y actuar desde la Autonomía.";
+  }
+  blocks.push(["Tus comportamientos Adulto",adulto]);
+
+  let nino;
+  if(lvl.Nl==="bajo" && lvl.Ns==="alto" && lvl.Pp==="alto"){
+    nino="Tu <strong>Niño Libre bajo junto a un Niño Sumiso y un Padre Protector altos</strong> sugiere que te ocupas mucho de los demás y poco de ti, con riesgo de sacrificar tus propias necesidades (e incluso tu salud). La clave de salida suele ser recuperar Niño Libre: tener en cuenta lo que tú necesitas.";
+  } else if(lvl.Nl==="alto"){
+    nino="Tu <strong>Niño Libre alto</strong> te aporta espontaneidad, intuición y creatividad. Junto con un buen Adulto es un tándem excelente para innovar; cuida solo que el diálogo con un Padre Crítico negativo no apague tus ideas.";
+  } else {
+    nino="Tus comportamientos Niño marcan cómo gestionas adaptación y espontaneidad. Un Niño Sumiso sano coopera y respeta normas útiles; uno negativo se somete sin criterio. Un Niño Rebelde sano cuestiona para aportar; uno negativo se queja por quejarse. La espontaneidad del Niño Libre es la que equilibra ambos.";
+  }
+  if(lvl.Nr==="alto") nino+=" Tu Niño Rebelde alto indica tendencia a cuestionarlo todo; bajo estrés, cuidado con «engancharte» en la rebeldía en lugar de ocuparte de lo que necesitas.";
+  blocks.push(["Tus comportamientos Niño",nino]);
+
+  blocks.push(["Recuerda: no eres tu egograma",
+    "Esto es una foto de tu <strong>tendencia bajo estrés</strong>, no tu forma de ser. Cuando el estrés es bajo, desde tu Adulto puedes elegir cualquier parte de tu personalidad; bajo estrés, las opciones disminuyen. Como en la leyenda cherokee de los dos lobos, <em>gana el lobo al que alimentas</em>: aunque no te des cuenta, tú eliges a qué partes de tu personalidad das tu energía."]);
+  blocks.push(["¿Y ahora qué?",
+    "Como orientación de desarrollo, un buen objetivo suele ser tener el <strong>Adulto y el Niño Libre bien desarrollados</strong>, con el Niño Adaptado, el Padre Crítico y el Padre Protector ligeramente por debajo. Para cambiar algo no hace falta «estar mal»: el cambio es desarrollo. En Análisis Transaccional se trabaja con las <strong>3 P's</strong> (Pat Crossman): <strong>Protección</strong> (sentirte en un espacio seguro), <strong>Permiso</strong> (darte licencia para hacerlo) y <strong>Potencia</strong> (atreverte a usar tu poder). Pregúntate: ¿qué problemas de tu día a día ves conectados con este perfil, y qué comportamiento alternativo querrías poner en marcha?"]);
+
+  const relHtml = `<h2>Lectura de tu perfil</h2>`+
+    blocks.map(([t,b])=>`<div class="state"><h3>${t}</h3><p>${b}</p></div>`).join("");
+
+  const ordered=[...STATES].sort((a,b)=>pct[b]-pct[a]);
+  const perState = `<h2>Qué significa cada estado en ti</h2>`+
+    ordered.map(s=>{
+      const I=INTERP[s], L=lvl[s];
+      const nivelTxt = L==="alto"?I.alto : (L==="bajo"?I.bajo : "Lo tienes en un nivel intermedio: ni marca en exceso tu estilo ni queda en segundo plano.");
+      const matiz = I.disfuncional ? `${I.funcional} ${I.disfuncional}` : I.funcional;
+      return `<div class="state" style="border-color:${STATE_COLOR[s]}">
+        <h3>${STATE_NAME[s]} — ${pct[s]}% <span class="small">(${scores[s]} pts · nivel ${L})</span></h3>
+        <p>${I.que} ${matiz}</p>
+        <p style="margin-top:6px"><strong>En ti:</strong> ${nivelTxt}</p>
+      </div>`;
+    }).join("");
+
+  document.getElementById("interp").innerHTML = relHtml + perState;
+
+  const strip=s=>s.replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim();
+  window.__egoInterp={
+    dominante:domNames, domPct:maxp,
+    rel:blocks.map(([t,b])=>({t, b:strip(b)})),
+    states:ordered.map(s=>{ const I=INTERP[s], L=lvl[s];
+      const nivelTxt=L==="alto"?I.alto:(L==="bajo"?I.bajo:"Lo tienes en un nivel intermedio: ni marca en exceso tu estilo ni queda en segundo plano.");
+      const matiz=I.disfuncional?`${I.funcional} ${I.disfuncional}`:I.funcional;
+      return {name:STATE_NAME[s], code:s, pct:pct[s], score:scores[s], level:L,
+              text:strip(`${I.que} ${matiz}`), enti:strip(nivelTxt)};
+    })
+  };
+}
+
+function downloadPDF(){
+  const E=window.__ego, I=window.__egoInterp;
+  if(!E||!I){ window.print(); return; }
+  try {
+    const {jsPDF}=window.jspdf;
+    if(!jsPDF) throw new Error("jsPDF no disponible");
+    const doc=new jsPDF("p","mm","a4");
+    const W=210, H=297, M=18, RGB={Pc:[31,58,95],Pp:[47,158,127],A:[0,147,201],Nl:[242,169,0],Ns:[142,111,179],Nr:[225,87,76]};
+    let y=M;
+    function br(h){ y+=h; if(y>H-M){ doc.addPage(); y=M; } }
+    function text(str,size,style,color,gap){
+      doc.setFont("helvetica",style||"normal"); doc.setFontSize(size);
+      const c=color||[26,26,26]; doc.setTextColor(c[0],c[1],c[2]);
+      const lh=size*0.52;
+      doc.splitTextToSize(str, W-2*M).forEach(ln=>{
+        if(y>H-M){ doc.addPage(); y=M; }
+        doc.text(ln, M, y); y+=lh;
+      });
+      if(gap) y+=gap;
+    }
+    doc.setFillColor(0,147,201); doc.rect(0,0,W,5,"F"); y=M+2;
+    text("inKNOWation", 11, "bold", [0,147,201], 1);
+    text("Tu Egograma", 22, "bold", [0,0,0], 1);
+    const nom=`${E.nombre||""} ${E.apellidos||""}`.trim();
+    if(nom) text("Resultados de "+nom, 12, "normal", [91,103,112], 3);
+
+    const order=["Pc","Pp","A","Nl","Ns","Nr"];
+    const NAME={Pc:"Padre Crítico",Pp:"Padre Protector",A:"Adulto",Nl:"Niño Libre",Ns:"Niño Sumiso",Nr:"Niño Rebelde"};
+    const chartH=48, colW=(W-2*M)/6, baseY=y+chartH+5;
+    order.forEach((s,i)=>{
+      const p=E.pct[s], bh=Math.max(p/100*chartH,1.5);
+      const bw=colW*0.6, x=M+i*colW+(colW-bw)/2, c=RGB[s];
+      doc.setFillColor(c[0],c[1],c[2]); doc.rect(x, baseY-bh, bw, bh, "F");
+      doc.setFontSize(8); doc.setTextColor(70,70,70); doc.setFont("helvetica","normal");
+      doc.text(p+"%", x+bw/2, baseY-bh-1.5, {align:"center"});
+      doc.setFont("helvetica","bold"); doc.setTextColor(26,26,26);
+      doc.text(s, x+bw/2, baseY+4, {align:"center"});
+      doc.setFont("helvetica","normal"); doc.setTextColor(120,120,120);
+      doc.text("("+E.scores[s]+")", x+bw/2, baseY+8, {align:"center"});
+    });
+    y=baseY+14;
+    text("% de facilidad para ubicarte en cada estado (puntuación bruta entre paréntesis)", 8, "italic", [120,120,120], 4);
+
+    text("Tu estado dominante: "+I.dominante, 14, "bold", [0,147,201], 1);
+    text("Es el estado en el que te resulta más fácil ubicarte ("+I.domPct+"%). Marca tu estilo más habitual, especialmente bajo estrés.", 11, "normal", [52,64,74], 4);
+
+    text("Lectura de tu perfil", 15, "bold", [0,0,0], 2);
+    I.rel.forEach(b=>{ text(b.t, 12, "bold", [0,0,0], 0.5); text(b.b, 11, "normal", [52,64,74], 3); });
+
+    text("Qué significa cada estado en ti", 15, "bold", [0,0,0], 2);
+    I.states.forEach(st=>{
+      text(`${st.name} — ${st.pct}% (${st.score} pts · nivel ${st.level})`, 12, "bold", RGB[st.code], 0.5);
+      text(st.text, 11, "normal", [52,64,74], 1);
+      text("En ti: "+st.enti, 11, "normal", [52,64,74], 3);
+    });
+
+    text("El Egograma es una herramienta de autoconocimiento basada en el Análisis Transaccional. Es una foto del momento, no una etiqueta fija: tu Adulto puede reequilibrar el resto de estados. © inKNOWation · Adaptado de un test de J. M. Opi.", 8.5, "italic", [120,120,120], 0);
+
+    doc.save("Egograma - "+(nom||"resultado")+".pdf");
+  } catch(e) {
+    window.print();
+  }
+}
+
+function renderVideos(){
+  const videos=[
+    {title:"Intro: Descubre tu personalidad",url:"https://video.wixstatic.com/video/f64b07_310049dffa0946f0beb3084e8bc89741/1080p/mp4/file.mp4"},
+    {title:"Análisis Estructural",url:"https://video.wixstatic.com/video/f64b07_fe216c878fd84e7facb9a369deb979fe/1080p/mp4/file.mp4"},
+    {title:"Análisis Funcional",url:"https://video.wixstatic.com/video/f64b07_1ce45cbf1dfd4a479da8cacdf2646ec1/1080p/mp4/file.mp4"},
+    {title:"Egograma 1",url:"https://video.wixstatic.com/video/f64b07_d765e3c0ce6f4f3e9843279bec1d2910/1080p/mp4/file.mp4"},
+    {title:"Egograma 2",url:"https://video.wixstatic.com/video/f64b07_9799d0e1b534427fbb94afaa78ed1064/1080p/mp4/file.mp4"},
+    {title:"Egograma 3",url:"https://video.wixstatic.com/video/f64b07_685f908f0122422ba96fd16133af2945/1080p/mp4/file.mp4"}
+  ];
+  const grid=document.getElementById("videosGrid");
+  grid.innerHTML=videos.map(v=>{
+    if(!v.url) return `<div class="video-item"><h4>${v.title}</h4><p style="color:#999;font-size:14px">URL del vídeo aún no configurada</p></div>`;
+    return `<div class="video-item">
+      <h4>${v.title}</h4>
+      <video width="100%" height="280" controls style="background:#000;border-radius:8px">
+        <source src="${v.url}" type="video/mp4">
+        Tu navegador no soporta HTML5 video.
+      </video>
+    </div>`;
+  }).join("");
+}
+
+function toggleVideos(){
+  const list=document.getElementById("videosList");
+  const toggle=document.getElementById("videosToggle");
+  if(list.style.display==="none"){
+    list.style.display="block";
+    toggle.classList.add("open");
+  } else {
+    list.style.display="none";
+    toggle.classList.remove("open");
+  }
+}
+
+function toggleGuide(){
+  const guide=document.getElementById("guideSection");
+  guide.style.display = guide.style.display==="none" ? "block" : "none";
+}
+
+function toggleSharedVideos(){
+  const list=document.getElementById("sharedVideosList");
+  const toggle=document.getElementById("sharedVideosToggle");
+  if(list.style.display==="none"){
+    list.style.display="block";
+    toggle.classList.add("open");
+  } else {
+    list.style.display="none";
+    toggle.classList.remove("open");
+  }
+}
+
+function toggleSharedGuide(){
+  const guide=document.getElementById("sharedGuideSection");
+  guide.style.display = guide.style.display==="none" ? "block" : "none";
+}
+
+function copyShareUrl(){
+  const url = document.getElementById("shareUrl").textContent;
+  navigator.clipboard.writeText(url).then(()=>{
+    alert("URL copiada al portapapeles");
+  }).catch(()=>{
+    alert("No se pudo copiar. Copia manualmente:\n" + url);
+  });
+}
+
+function loadSharedResult(id){
+  fetch(CONFIG.webhookUrl+"?id="+encodeURIComponent(id))
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.success){
+        renderSharedResult(data);
+      } else {
+        document.getElementById("sharedView").innerHTML = `<div class="card"><p style="color:#e1574c">No se encontró este egograma. Verifica que el enlace sea correcto.</p></div>`;
+        document.getElementById("sharedView").classList.remove("hidden");
+      }
+    })
+    .catch(e=>{
+      document.getElementById("sharedView").innerHTML = `<div class="card"><p style="color:#e1574c">Error al cargar el egograma.</p></div>`;
+      document.getElementById("sharedView").classList.remove("hidden");
+    });
+}
+
+function renderSharedResult(data){
+  document.getElementById("intro").classList.add("hidden");
+  document.getElementById("test").classList.add("hidden");
+  document.getElementById("results").classList.add("hidden");
+  document.getElementById("sharedView").classList.remove("hidden");
+
+  const scores=data.puntuaciones, pct=data.porcentajes;
+
+  document.getElementById("sharedName").textContent = (data.nombre || "")+" "+(data.apellidos || "");
+
+  const c=document.getElementById("sharedChart");
+  c.innerHTML=STATES.map(s=>`
+    <div class="bar">
+      <div class="col" style="height:${Math.max(pct[s],4)}%;background:${STATE_COLOR[s]}">${pct[s]}%</div>
+      <div class="lbl">${s}</div>
+      <div class="sub">${STATE_NAME[s]}</div>
+      <div class="sub">(${scores[s]})</div>
+    </div>`).join("");
+
+  const maxp=Math.max(...STATES.map(s=>pct[s]));
+  const dom=STATES.filter(s=>pct[s]===maxp);
+  const domNames=dom.map(s=>STATE_NAME[s]).join(" y ");
+  document.getElementById("sharedDomBox").innerHTML =
+    `<h2>Estado dominante: ${domNames}</h2>
+     <p style="color:#34404a;margin:0">Es el estado en el que le resulta más fácil "ubicarse" (${maxp}%).
+     Marca su estilo más habitual de pensar, sentir y actuar — especialmente bajo estrés.</p>`;
+
+  const lvl={}; STATES.forEach(s=>lvl[s]=levelOf(pct[s]));
+  const padreAvg=(pct.Pc+pct.Pp)/2;
+  const blocks=[];
+
+  let padre;
+  const dP=pct.Pp-pct.Pc;
+  if(Math.abs(dP)<=8){
+    padre="Tiene los dos comportamientos Padre bastante parejos: le cuesta poco actuar desde uno u otro y elige según el contexto.";
+  } else if(dP>0){
+    padre="Su <strong>Padre Protector pesa más que su Padre Crítico</strong>: tiende a mirar primero el impacto sobre las personas y luego sobre los resultados.";
+  } else {
+    padre="Su <strong>Padre Crítico pesa más que su Padre Protector</strong>: tiende a mirar primero los resultados y luego las personas.";
+  }
+  blocks.push(["Comportamientos Padre",padre]);
+
+  let adulto;
+  if(lvl.A==="bajo" || pct.A < padreAvg-12){
+    adulto="Su <strong>Adulto está poco dimensionado</strong> respecto a su Padre.";
+  } else if(lvl.A==="alto" && lvl.Pc==="alto"){
+    adulto="Su <strong>Adulto es alto y, a la vez, su Padre Crítico también</strong>.";
+  } else {
+    adulto="Su <strong>Adulto está razonablemente dimensionado</strong>.";
+  }
+  blocks.push(["Comportamientos Adulto",adulto]);
+
+  let nino="Comportamientos equilibrados entre espontaneidad y adaptación.";
+  blocks.push(["Comportamientos Niño",nino]);
+
+  const relHtml = `<h2>Lectura de perfil</h2>`+
+    blocks.map(([t,b])=>`<div class="state"><h3>${t}</h3><p>${b}</p></div>`).join("");
+
+  const ordered=[...STATES].sort((a,b)=>pct[b]-pct[a]);
+  const perState = `<h2>Qué significa cada estado</h2>`+
+    ordered.map(s=>{
+      const I=INTERP[s], L=lvl[s];
+      return `<div class="state" style="border-color:${STATE_COLOR[s]}">
+        <h3>${STATE_NAME[s]} — ${pct[s]}% <span class="small">(${scores[s]} pts)</span></h3>
+      </div>`;
+    }).join("");
+
+  document.getElementById("sharedInterp").innerHTML = relHtml + perState;
+
+  renderSharedVideos();
+
+  window.scrollTo(0,0);
+}
+
+function renderSharedVideos(){
+  const videos=[
+    {title:"Intro: Descubre tu personalidad",url:"https://video.wixstatic.com/video/f64b07_310049dffa0946f0beb3084e8bc89741/1080p/mp4/file.mp4"},
+    {title:"Análisis Estructural",url:"https://video.wixstatic.com/video/f64b07_fe216c878fd84e7facb9a369deb979fe/1080p/mp4/file.mp4"},
+    {title:"Análisis Funcional",url:"https://video.wixstatic.com/video/f64b07_1ce45cbf1dfd4a479da8cacdf2646ec1/1080p/mp4/file.mp4"},
+    {title:"Egograma 1",url:"https://video.wixstatic.com/video/f64b07_d765e3c0ce6f4f3e9843279bec1d2910/1080p/mp4/file.mp4"},
+    {title:"Egograma 2",url:"https://video.wixstatic.com/video/f64b07_9799d0e1b534427fbb94afaa78ed1064/1080p/mp4/file.mp4"},
+    {title:"Egograma 3",url:"https://video.wixstatic.com/video/f64b07_685f908f0122422ba96fd16133af2945/1080p/mp4/file.mp4"}
+  ];
+  const grid=document.getElementById("sharedVideosGrid");
+  grid.innerHTML=videos.map(v=>{
+    if(!v.url) return `<div class="video-item"><h4>${v.title}</h4><p style="color:#999;font-size:14px">URL del vídeo aún no configurada</p></div>`;
+    return `<div class="video-item">
+      <h4>${v.title}</h4>
+      <video width="100%" height="280" controls style="background:#000;border-radius:8px">
+        <source src="${v.url}" type="video/mp4">
+        Tu navegador no soporta HTML5 video.
+      </video>
+    </div>`;
+  }).join("");
+}
+
+function restart(){ answers={}; ["f_nombre","f_apellidos","f_email","f_empresa"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("results").classList.add("hidden");
+  document.getElementById("intro").classList.remove("hidden"); window.scrollTo(0,0); }
+
+function val(id){return document.getElementById(id).value.trim();}
+function validEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
+</script>
+</body>
+</html>
