@@ -174,7 +174,7 @@
         <p style="margin:0 0 12px;color:var(--muted)">Descarga la guía completa para profundizar en tu interpretación:</p>
         <a href="https://f64b07ab-78bb-430e-a878-e7c676e6e7cb.usrfiles.com/ugd/f64b07_7e8c48b54ad34e1180be016835ba9e92.pdf" class="btn" style="display:inline-block;padding:10px 16px;text-decoration:none;font-size:14px" download>⬇ Descargar guía PDF</a>
         <div style="display:flex;gap:12px;margin-top:12px">
-          <button class="btn ghost" onclick="toggleGuide()">← Volver a los resultados</button>
+          <button class="btn ghost" onclick="toggleGuide()">← Volver a los vídeos</button>
         </div>
       </div>
 
@@ -237,7 +237,7 @@
 
 <script>
 const CONFIG = {
-  webhookUrl: "https://script.google.com/macros/s/AKfycbwnwt4rRjo8K1B3wQnNOTmm4veL6N_nLqrqhcCfXFPMw-WoEGpUjgx0DrDtV_2xSOyI9w/exec",
+  webhookUrl: "https://script.google.com/macros/s/AKfycbxcJr60Yy04OWKLC5Nr4TetOlATCN9aEJL91C-j36nRVH5oNEHmoDTAuXclSsozCcHe0Q/exec",
   enviarResultados: true
 };
 
@@ -255,7 +255,7 @@ const QUESTIONS = [
  "En la vida, me baso en ciertos principios, en ciertos valores que me ayuden a elegir mi deber.",
  "Tengo miedo a ser duro/a; es mejor no presionar, no ofender.",
  "Me ofrezco voluntariamente, me gusta ayudar.",
- "Las personas fuertes y seguras de sí mismas me impresionan y me producen mucho respeto y hasta algo de temor.",
+ "Las personas fuertes y seguras de sí mismas me impresionan y me producen mucho "respeto" y hasta algo de temor.",
  "Ideo fácilmente soluciones originales.",
  "Soy algo egoísta, despreocupado/a. Voy a lo mío.",
  "Me disgusta mucho que me impongan algo.",
@@ -275,7 +275,7 @@ const QUESTIONS = [
  "Suelo trampear. Tengo mis pequeñas venganzas.",
  "Sé reunir bien la información útil.",
  "Doy muestras de sangre fría.",
- "Soy vivo/a, impulsivo/a, me embalo, reacciono bruscamente.",
+ "Soy vivo/a, impulsivo/a, me "embalo", reacciono bruscamente.",
  "Soporto mal a las personas débiles o indecisas.",
  "Temo ser inoportuno/a, molestar, perturbar. Prefiero no insistir demasiado.",
  "Soy efusivo/a, espontáneo/a, sonriente.",
@@ -754,6 +754,7 @@ function renderSharedResult(data){
      <p style="color:#34404a;margin:0">Es el estado en el que le resulta más fácil "ubicarse" (${maxp}%).
      Marca su estilo más habitual de pensar, sentir y actuar — especialmente bajo estrés.</p>`;
 
+  // Interpretación similar a la del resultado normal
   const lvl={}; STATES.forEach(s=>lvl[s]=levelOf(pct[s]));
   const padreAvg=(pct.Pc+pct.Pp)/2;
   const blocks=[];
