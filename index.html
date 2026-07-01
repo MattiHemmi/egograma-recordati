@@ -691,12 +691,12 @@ function toggleVideos(){
 function toggleGuide(){
   const guide=document.getElementById("guideSection");
   const expanded=document.getElementById("guideExpanded");
-  if(guide.style.display==="none"){
-    guide.style.display="block";
-    expanded.style.display="none";
-  } else {
+  if(expanded.style.display==="none"){
     guide.style.display="none";
     expanded.style.display="block";
+  } else {
+    guide.style.display="block";
+    expanded.style.display="none";
   }
 }
 
